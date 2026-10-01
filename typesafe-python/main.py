@@ -1,4 +1,6 @@
 import os
+from types import TracebackType
+from typing import Self
 
 import httpx2
 
@@ -30,6 +32,17 @@ class JevLib:
             http_client=http_client,
             base_url=base_url,
         )
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.client.close()
 
     def setup_client(
         self,
@@ -65,8 +78,13 @@ class JevLib:
 
 
 def main():
-    JevLib()
-
+    try:
+        with JevLib() as jevlib:
+            print("JevLib initialized successfully.")
+    except RuntimeError as e:
+        print(f"Error initializing JevLib: {e}")
+        return
+    
 
 if __name__ == "__main__":
     main()
