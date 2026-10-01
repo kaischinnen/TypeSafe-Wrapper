@@ -6,8 +6,7 @@ import httpx2
 
 from collections.abc import Mapping
 
-from typesafe_sdk import RetryPolicy, TypeSafeClient
-
+from typesafe_sdk import JSONContent, JSONValue, Noul, RetryPolicy, TypeSafeClient
 
 class JevLib:
     def __init__(
@@ -76,16 +75,27 @@ class JevLib:
         except KeyError:
             raise RuntimeError("Missing required environment variable: $TYPESAFE_API_KEY") from None
 
+    def feels(
+        self,
+        state: JSONContent,
+        question: str,
+        *,
+        model: str | None = None,
+        retry: RetryPolicy | None = None,
+        timeout: float | httpx2.Timeout | None = None,
+        extra_headers: Mapping[str, str] | None = None,
+        extra_body: Mapping[str, JSONValue | None] | None = None,
+    ) -> float:
+        result = self.client.system_one(
+            state,
+            {
+                "feels": Noul(instructions=question),
+            },
+            model=model,
+            retry=retry,
+            timeout=timeout,
+            extra_headers=extra_headers,
+            extra_body=extra_body,
+        )
 
-def main():
-    try:
-        with JevLib() as jevlib:
-            print("JevLib initialized successfully.")
-    except RuntimeError as e:
-        print(f"Error initializing JevLib: {e}")
-        return
-    
-
-if __name__ == "__main__":
-    main()
-                 
+        return result.nouls["feels"].noul
